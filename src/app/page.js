@@ -9,14 +9,15 @@ export default function Home() {
   const [message, setMessage] = React.useState('');
   const [chat, setChat] = React.useState([]);
   const [update, setUpdate] = React.useState(false);
-  let element = document.querySelector('#area');
+  const [author, setAuthor] = React.useState('');
 
   React.useEffect(() => {
+    setAuthor(localStorage.getItem('author'));
     const fetchData = async () => {
       try {
         const chat = await axios.get('https://63c3d2698067b6bef6cedc41.mockapi.io/chat');
         setChat(chat.data);
-
+        let element = document.querySelector('#area');
       } catch (err) {
         return err;
       }
@@ -49,7 +50,7 @@ export default function Home() {
   return (
     <div className={styles.chatblock}>
       {      
-        localStorage.getItem('author') ? 
+        author ? 
         <>
           <div style={{width: '100%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #727272'}}>
             <h1 className={styles.logo}>Next Chat</h1>

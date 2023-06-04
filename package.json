@@ -2,11 +2,14 @@
   "name": "next-chat",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://iturturika.github.io/next-chat/",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "gh-pages -d build",
+    "predeploy": "npm run build"
   },
   "dependencies": {
     "axios": "^1.4.0",
