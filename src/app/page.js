@@ -1,95 +1,79 @@
+"use client"
+import React from 'react';
 import Image from 'next/image'
 import styles from './page.module.css'
+import Message from './components/message';
+import axios from 'axios'
 
 export default function Home() {
+  const [message, setMessage] = React.useState('');
+  const [chat, setChat] = React.useState([]);
+  const [update, setUpdate] = React.useState(false);
+  let element = document.querySelector('#area');
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const chat = await axios.get('https://63c3d2698067b6bef6cedc41.mockapi.io/chat');
+        setChat(chat.data);
+
+      } catch (err) {
+        return err;
+      }
+    }
+    fetchData();
+
+  }, [update]);
+
+  const sendMessage = () => {
+    let currentDate = new Date();
+    let hours = currentDate.getHours();
+    let minutes = currentDate.getMinutes();
+    axios.post('https://63c3d2698067b6bef6cedc41.mockapi.io/chat', {
+      message: message,
+      author: localStorage.getItem('author'),
+      time: (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes)
+    })
+    .then((res) => {
+      setUpdate(!update);
+      setMessage('');
+      setTimeout(() => {
+        element.scrollTop = 1000000;
+      }, 400)
+    })
+    .catch((err) => {
+      return(err);
+    })
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className={styles.chatblock}>
+      {      
+        localStorage.getItem('author') ? 
+        <>
+          <div style={{width: '100%', display: 'flex', alignItems: 'center', borderBottom: '1px solid #727272'}}>
+            <h1 className={styles.logo}>Next Chat</h1>
+          </div>
+          <div className={styles.messagearea} id='area'>
+            {
+              chat.map((item) => {
+                return (
+                  <Message author={item.author} text={item.message} sendBy={localStorage.getItem('author') === item.author ? 'me' : 'another'} key={item.id} time={item.time}/>
+                )
+              })
+            }
+          </div>
+          <div style={{marginTop: 'auto', width: '100%', display: 'flex', alignItems: 'center', borderTop: '1px solid #727272'}}>
+            <textarea type='text' placeholder='Message' className={styles.input} value={message} onChange={(event) => {setMessage(event.target.value)}} style={message.length > 104 ? {height: '100px'} : null}></textarea>
+            <span className={styles.button} onClick={sendMessage}>SEND</span>
+          </div>
+        </>
+        :
+        <div style={{marginTop: 'auto', width: '100%', display: 'flex', alignItems: 'center', borderTop: '1px solid #727272'}}>
+          <input type='text' placeholder='Name' className={styles.input} value={message} onChange={(event) => {setMessage(event.target.value)}} style={message.length > 104 ? {height: '100px'} : null}></input>
+          <span className={styles.button} onClick={() => {localStorage.setItem('author', message)}}>Connect</span>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      }
+    </div>
   )
 }
